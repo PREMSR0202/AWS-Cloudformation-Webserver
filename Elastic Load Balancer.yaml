@@ -1,0 +1,88 @@
+Parameters:
+  Vpc:
+    Description: Select the VPC for Target Groups
+    Type: String
+  
+  PublicSubnetId1:
+    Description: Subnet IDs that is a List of Subnet Id
+    Type: String
+  
+  PublicSubnetId2:
+    Description: Subnet IDs that is a List of Subnet Id
+    Type: String
+
+
+Resources:
+  ElasticLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      IpAddressType: ipv4
+      Name: ELB
+      Scheme: internet-facing
+      Subnets: 
+      - !Ref PublicSubnetId1
+      - !Ref PublicSubnetId2
+      SecurityGroups:
+        - !Ref SecurityGroup
+      Type: application
+  
+  SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: SgElb
+      GroupDescription: SG for ELB
+      VpcId: !Ref Vpc
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 80
+        ToPort: 80
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: tcp
+        FromPort: 8089
+        ToPort: 8089
+        CidrIp: 0.0.0.0/0
+
+  ElbListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref TargetGroup
+      LoadBalancerArn: !Ref ElasticLoadBalancer
+      Port: 80
+      Protocol: HTTP
+      
+
+  TargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckEnabled: 'True'
+      HealthCheckIntervalSeconds: 30
+      HealthCheckPath: '/'
+      HealthCheckPort: traffic-port
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 5
+      Name: TargetGroup
+      Port: 80
+      Protocol: HTTP
+      TargetType: instance
+      UnhealthyThresholdCount: 2
+      VpcId: !Ref Vpc
+
+Outputs:
+  TargetGroupId:
+    Description: Target Group ID
+    Value: !Ref TargetGroup
+    Export:
+      Name: TargetGroupId
+  ElasticLoadBalancerId:
+    Description: ELB ID
+    Value: !Ref ElasticLoadBalancer
+    Export:
+      Name: ElbId
+  SecurityGroupId:
+    Description: SG for ELB
+    Value: !GetAtt SecurityGroup.GroupId
+    Export:
+      Name: SgElb

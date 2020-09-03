@@ -1,0 +1,235 @@
+Parameters:
+
+  VpcCIDR:
+    Description: CIDR range for NEW VPC
+    Type: String
+    Default: 10.0.0.0/16
+    AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})
+    ConstraintDescription: must be a valid IP CIDR range of the form x.x.x.x/x.
+
+  PublicSubnet1CIDR:
+    Description: Enter a Ip Address Range [ CIDR ] for Public Subnet in First Availability Zone
+    Type: String
+    Default: 10.0.0.0/24
+    AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})
+    ConstraintDescription: must be a valid IP CIDR range of the form x.x.x.x/x.
+  
+  PrivateSubnet1CIDR:
+    Description: Enter a Ip Address Range [ CIDR ] for Private Subnet in First Availability Zone
+    Type: String
+    Default: 10.0.16.0/20
+    AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})
+    ConstraintDescription: must be a valid IP CIDR range of the form x.x.x.x/x.
+  
+  PublicSubnet2CIDR:
+    Description: Enter a Ip Address Range [ CIDR ] for Public Subnet in Second Availability Zone
+    Type: String
+    Default: 10.0.1.0/24
+    AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})
+    ConstraintDescription: must be a valid IP CIDR range of the form x.x.x.x/x.
+  
+  PrivateSubnet2CIDR:
+    Description: Enter a Ip Address Range [ CIDR ] for Private Subnet in Second Availability Zone
+    Type: String
+    Default: 10.0.32.0/20
+    AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})
+    ConstraintDescription: must be a valid IP CIDR range of the form x.x.x.x/x.
+  
+  KeyName:
+    Description: Name of an existing EC2 KeyPair to enable SSH access to the instances. Linked to AWS Parameter
+    Type: AWS::EC2::KeyPair::KeyName
+    ConstraintDescription: must be the name of an existing EC2 KeyPair.
+
+
+Resources:
+  Vpc:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref VpcCIDR
+      EnableDnsSupport: 'true'
+      EnableDnsHostnames: 'true'
+      InstanceTenancy: default
+      Tags:
+        - Key: 'Name'
+          Value: 'NewVPC'
+
+  PublicSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Select [ 0, !GetAZs '' ]
+      CidrBlock: !Ref PublicSubnet1CIDR
+      MapPublicIpOnLaunch: 'true'
+      VpcId: !Ref Vpc
+  
+  PrivateSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Select [ 0, !GetAZs '' ]
+      CidrBlock: !Ref PrivateSubnet1CIDR
+      MapPublicIpOnLaunch: 'false'
+      VpcId: !Ref Vpc
+  
+  PublicSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Select [ 1, !GetAZs '' ]
+      CidrBlock: !Ref PublicSubnet2CIDR
+      MapPublicIpOnLaunch: 'true'
+      VpcId: !Ref Vpc
+  
+  PrivateSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Select [ 1, !GetAZs '' ]
+      CidrBlock: !Ref PrivateSubnet2CIDR
+      MapPublicIpOnLaunch: 'false'
+      VpcId: !Ref Vpc
+
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref Vpc
+  
+  PrivateRouteTable1:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref Vpc
+  
+  PrivateRouteTable2:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref Vpc
+
+  PublicRouteTableAssociation1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId:  !Ref PublicSubnet1
+  
+  PublicRouteTableAssociation2:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId:  !Ref PublicSubnet2
+ 
+  PrivateRouteTable1Association:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable1
+      SubnetId: !Ref PrivateSubnet1
+  
+  PrivateRouteTable2Association:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable2
+      SubnetId: !Ref PrivateSubnet2
+  
+  Igw:
+    Type: AWS::EC2::InternetGateway
+    Properties: {}
+
+  IgwAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId: !Ref Igw
+      VpcId: !Ref Vpc
+
+  Eip1:
+    Type: AWS::EC2::EIP
+    Properties: {}
+  
+  Eip2:
+    Type: AWS::EC2::EIP
+    Properties: {}
+
+  NatgateWay1:
+    Type: AWS::EC2::NatGateway
+    DependsOn: Eip1
+    Properties:
+      AllocationId: !GetAtt Eip1.AllocationId
+      SubnetId: !Ref PublicSubnet1
+  
+  NatgateWay2:
+    Type: AWS::EC2::NatGateway
+    DependsOn: Eip2
+    Properties:
+      AllocationId: !GetAtt Eip2.AllocationId
+      SubnetId: !Ref PublicSubnet2
+
+  PublicRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref Igw
+
+  PrivateRoute1:
+    Type: AWS::EC2::Route
+    DependsOn: IgwAttachment
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable1
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatgateWay1
+  
+  PrivateRoute2:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable2
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatgateWay2
+
+  ELB:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://cft-webserver-project.s3.us-east-2.amazonaws.com/Elastic+Load+Balancer.yaml
+      Parameters:
+        Vpc: !Ref Vpc
+        PublicSubnetId1: !Ref PublicSubnet1
+        PublicSubnetId2: !Ref PublicSubnet2
+      TimeoutInMinutes: 15
+  
+  ASG:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: ELB
+    Properties:
+      TemplateURL: https://cft-webserver-project.s3.us-east-2.amazonaws.com/Auto+Scaling+Group+%26+Elastic+File+System.yaml
+      Parameters:
+        Key: !Ref KeyName
+        PrivateSub1: !Ref PrivateSubnet1
+        PrivateSub2: !Ref PrivateSubnet2
+        PublicSub1: !Ref PublicSubnet1
+        PublicSub2: !Ref PublicSubnet2
+        VpcId: !Ref Vpc
+      TimeoutInMinutes: 15
+
+Outputs:
+  
+  VPC:
+    Description: Vpc ID
+    Value: !Ref Vpc
+    Export:
+      Name: VpcId
+  
+  PUBLICSUBNET1:
+    Description: ID of Public Subnet in First Availability Zone
+    Value: !Ref PublicSubnet1
+    Export:
+      Name: PublicSub1
+
+  PRIVATESUBNET1:
+    Description: ID of Private Subnet in First Availability Zone
+    Value: !Ref PrivateSubnet1
+    Export:
+      Name: PrivateSub1
+
+  PUBLICSUBNET2:
+    Description: ID of Public Subnet in Second Availability Zone
+    Value: !Ref PublicSubnet2
+    Export:
+      Name: PublicSub2
+
+  PRIVATESUBNET2:
+    Description: ID of Private Subnet in Second Availability Zone
+    Value: !Ref PrivateSubnet2
+    Export:
+      Name: PrivateSub2

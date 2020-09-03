@@ -1,0 +1,144 @@
+Parameters:
+  VpcId:
+    Description: VPC ID for ASG
+    Type: String
+
+  Key:
+    Description: Key For Instance
+    Type: String
+  
+  PrivateSub1:
+    Description: Private Subnet 1 Id
+    Type: String
+
+  PrivateSub2:
+    Description: Private Subnet 2 Id
+    Type: String
+  
+  PublicSub1:
+    Description: Public Subnet 1 Id
+    Type: String
+
+  PublicSub2:
+    Description: Public Subnet 2 Id
+    Type: String
+
+Mappings:
+  RegionMap:
+    us-east-1:
+      AMI: ami-0761dd91277e34178
+    us-east-2:
+      AMI: ami-0f4aeaec5b3ce9152
+    us-west-1:
+      AMI: ami-0ec0b3eb271f5afbc
+    us-west-2:
+      AMI: ami-0a07be880014c7b8e
+    ap-south-1:
+      AMI: ami-0a780d5bac870126a
+
+Resources:
+
+  Efs:
+    Type: AWS::EFS::FileSystem
+    Properties:
+      Encrypted: 'true'
+      PerformanceMode: generalPurpose
+
+  EfsMount1:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref Efs
+      SecurityGroups:
+        - !Ref EfsSg
+      SubnetId: !Ref PublicSub1
+
+  EfsMount2:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref Efs
+      SecurityGroups:
+        - !Ref EfsSg
+      SubnetId: !Ref PublicSub2
+
+  LaunchConfiguration:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    DependsOn:
+      - Efs
+      - EfsSg
+      - EfsMount1
+      - EfsMount2
+    Properties:
+      ImageId: !FindInMap [ RegionMap, !Ref 'AWS::Region', AMI ]
+      InstanceType: t2.micro
+      LaunchConfigurationName: LC
+      KeyName: !Ref Key
+      SecurityGroups:
+        - !Ref SecurityGroup
+      UserData:
+        'Fn::Base64': 
+          !Sub |
+            #!/bin/bash -xe
+            yum update -y
+            yum install -y amazon-efs-utils 
+            yum install -y nginx
+            mkdir -p /home/ec2-user/efs
+            /etc/init.d/nginx start
+            cd /home/ec2-user
+            mount -t efs -o tls ${Efs}:/ efs
+
+
+  AutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    DependsOn: LaunchConfiguration
+    Properties:
+      VPCZoneIdentifier: 
+        - !Ref PrivateSub1
+        - !Ref PrivateSub2
+      AutoScalingGroupName: ASG
+      HealthCheckType: ELB
+      HealthCheckGracePeriod: 60
+      LaunchConfigurationName: !Ref LaunchConfiguration
+      DesiredCapacity: '2'
+      MinSize: '1'
+      MaxSize: '5'
+      TargetGroupARNs: 
+        - !ImportValue TargetGroupId
+
+  ScalingPolicies:
+    Type: AWS::AutoScaling::ScalingPolicy
+    Properties:
+      AutoScalingGroupName: !Ref AutoScalingGroup
+      PolicyType: TargetTrackingScaling
+      TargetTrackingConfiguration:
+        PredefinedMetricSpecification:
+          PredefinedMetricType: ASGAverageCPUUtilization
+        TargetValue: '50'
+
+  SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: InstanceSg
+      GroupDescription: Security Group for Instances
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 80
+        ToPort: 80
+        SourceSecurityGroupId: !ImportValue SgElb
+      - IpProtocol: tcp
+        FromPort: 22
+        ToPort: 22
+        CidrIp: 0.0.0.0/0
+
+  EfsSg:
+    Type: AWS::EC2::SecurityGroup
+    DependsOn: SecurityGroup
+    Properties:
+      GroupName: EfsSg
+      GroupDescription: Security Group for EFS
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 2049
+        ToPort: 2049
+        SourceSecurityGroupId: !GetAtt SecurityGroup.GroupId
