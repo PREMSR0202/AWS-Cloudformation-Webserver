@@ -3,7 +3,7 @@
 <img src="Images/VPC.png" width="500" heigth="200"/>
 
 ## ELB Structure
-<img src="Images/ELB.png" width="500" heigth="500"/>
+<img src="Images/ELB.png" width="250" heigth="250"/>
 
 ## ASG & EFS Structure
-<img src="Images/ASG & EFS.png" width="500" heigth="500"/>
+<img src="Images/ASG & EFS.png" width="250" heigth="250"/>
