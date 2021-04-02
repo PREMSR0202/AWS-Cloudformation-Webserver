@@ -21,8 +21,8 @@ The main objective of this project is to build a NGINX web server on AWS cloud, 
 * [Elastic Load Balancer](https://docs.aws.amazon.com/elasticloadbalancing/latest/userguide/what-is-load-balancing.html)
 * [Auto Scaling Group](https://docs.aws.amazon.com/autoscaling/ec2/userguide/what-is-amazon-ec2-auto-scaling.html)
 
-## PUBLICATION OF THIS PROJECT
-[IOP Publishing Ltd](https://iopscience.iop.org/article/10.1088/1757-899X/1055/1/012113)
+## PUBLICATION
+This Project had been published at [International Virtual Conference on Robotics, Automation, Intelligent Systems and Energy (IVC RAISE 2020) 15th December 2020, Erode, India](https://iopscience.iop.org/article/10.1088/1757-899X/1055/1/012113)
 
 ## CLOUD-FORMATION TECHNIQUE
 ![ALT](https://github.com/PREMSR0202/Webserver-Using-CFT/blob/master/Images/Test%20Page%20for%20the%20Nginx%20HTTP%20Server%20on%20the%20Amazon%20Linux%20AMI%20-%20Google%20Chrome%2024-09-2020%2011_02_55%20AM.png)
