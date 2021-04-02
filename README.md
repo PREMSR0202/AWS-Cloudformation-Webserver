@@ -1,6 +1,6 @@
 # Highly Scalable & Load Balanced Web Server Using Cloud Formation Technique in AWS Infrastructure
   
-The main objective of this project is to build a NGINX web server on AWS cloud, which is highly available among different regions, scalable and should balance the load given by the users. Cloud Formation Technique[CFT] is proposed in which IT industries can resources on cloud using YAML/JSON code.
+The main objective of this project is to build a NGINX web server on AWS cloud, which is highly available among different regions, scalable and should balance the load given by the users. Cloud Formation Technique[CFT] is proposed techique in this project.
 
 ## [CLOUD FORMATION TECHNIQUE](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/Welcome.html) 
 
