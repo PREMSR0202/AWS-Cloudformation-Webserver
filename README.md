@@ -10,6 +10,8 @@ The main objective of this project is to build a NGINX web server on AWS cloud, 
 
 * You can use a template to create, update, and delete an entire stack as a single unit, as often as you need to, instead of managing resources individually. You can manage and provision stacks across multiple AWS accounts and AWS Regions.
 
+![ALT](https://github.com/PREMSR0202/Webserver-Using-CFT/blob/master/Images/aws-cloudformation-index.png)
+
 ## AWS SERVICES USED
 * [Virtual Private Cloud](https://docs.aws.amazon.com/vpc/latest/userguide/what-is-amazon-vpc.html)
 * [AWS EC2](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/concepts.html)
@@ -17,7 +19,7 @@ The main objective of this project is to build a NGINX web server on AWS cloud, 
 * [Elastic Load Balancer](https://docs.aws.amazon.com/elasticloadbalancing/latest/userguide/what-is-load-balancing.html)
 * [Auto Scaling Group](https://docs.aws.amazon.com/autoscaling/ec2/userguide/what-is-amazon-ec2-auto-scaling.html)
 
-## CLOUD-FORMATION TECHNIQUE OUTPUT 
+## CLOUD-FORMATION TECHNIQUE
 ![ALT](https://github.com/PREMSR0202/Webserver-Using-CFT/blob/master/Images/Test%20Page%20for%20the%20Nginx%20HTTP%20Server%20on%20the%20Amazon%20Linux%20AMI%20-%20Google%20Chrome%2024-09-2020%2011_02_55%20AM.png)
 
 ## NGINX SERVER
