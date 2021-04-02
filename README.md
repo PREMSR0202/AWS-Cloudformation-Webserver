@@ -16,3 +16,9 @@ The main objective of this project is to build a NGINX web server on AWS cloud, 
 * [Elastic File System](https://docs.aws.amazon.com/efs/latest/ug/whatisefs.html)
 * [Elastic Load Balancer](https://docs.aws.amazon.com/elasticloadbalancing/latest/userguide/what-is-load-balancing.html)
 * [Auto Scaling Group](https://docs.aws.amazon.com/autoscaling/ec2/userguide/what-is-amazon-ec2-auto-scaling.html)
+
+## CLOUD-FORMATION TECHNIQUE OUTPUT 
+![ALT](https://github.com/PREMSR0202/Webserver-Using-CFT/blob/master/Images/Test%20Page%20for%20the%20Nginx%20HTTP%20Server%20on%20the%20Amazon%20Linux%20AMI%20-%20Google%20Chrome%2024-09-2020%2011_02_55%20AM.png)
+
+## NGINX SERVER
+![ALT](https://github.com/PREMSR0202/Webserver-Using-CFT/blob/master/Images/Test%20Page%20for%20the%20Nginx%20HTTP%20Server%20on%20the%20Amazon%20Linux%20AMI%20-%20Google%20Chrome%2024-09-2020%2011_03_03%20AM.png)
